@@ -2,8 +2,8 @@ using System.Collections;
 ﻿using UnityEngine;
 
 public class BoardGen : MonoBehaviour {
-	[RangeAttribute(0, Mathf.PI * 2)]
-	public float yStep, pStep;
+	[RangeAttribute(1, 20)]
+	public int yawSteps, pitchSteps;
 	public float radius;
 	public float delay;
 
@@ -12,10 +12,13 @@ public class BoardGen : MonoBehaviour {
 	}
 
 	IEnumerator SlowGenerate() {
+		int yStart = 0, pStart = 1;
+		float yAngle = 2f * Mathf.PI, yDelta = yAngle / yawSteps;
+		float pAngle = Mathf.PI, pDelta = pAngle / (pitchSteps + 1);
 
-		for(float yaw = 0; yaw < 11f * Mathf.PI / 6f; yaw += yStep) {
-			for(float pitch = Mathf.PI / 6; pitch < Mathf.PI; pitch += pStep) {
-				GenerateFace(transform.localPosition, GetCoords(yaw, pitch));
+		for(int yStep = yStart; yStep < yawSteps; yStep++) {
+			for(int pStep = pStart; pStep < (pitchSteps + 1); pStep++) {
+				GenerateFace(transform.localPosition, GetCoords(yStep * yDelta, pStep * pDelta));
 				yield return new WaitForSeconds(delay);
 			}
 		}
@@ -33,8 +36,6 @@ public class BoardGen : MonoBehaviour {
 	GameObject GenerateFace(Vector3 center, Vector3 position) {
 		GameObject face = GameObject.CreatePrimitive(PrimitiveType.Cube);
 		face.name = "Face";
-
-		Debug.Log(position);
 
 		face.transform.parent = transform;
 		face.transform.localPosition = position;

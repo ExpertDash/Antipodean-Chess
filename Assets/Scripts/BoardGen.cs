@@ -6,10 +6,11 @@ public class BoardGen : MonoBehaviour {
 	public int yawSteps = 8, pitchSteps = 8;
 	public float radius = 5;
 	public float delay = 0.05f;
-	public float thinness = 0.001f;
+	public float thinness = 0.01f;
 
 	public bool useProceduralGeneration = false;
 
+	[HideInInspector]
 	public UnityEvent genCompleteEvent;
 
 	void Start() {
@@ -25,15 +26,17 @@ public class BoardGen : MonoBehaviour {
 			yield return new WaitForSeconds(delay);
 		}
 
-		GenerateFace("Alpha", GetCoords(0, 0));
+		GenerateSquare("Alpha", 0, GetCoords(0, 0));
 
 		if(useDelay) {
 			yield return new WaitForSeconds(delay);
 		}
 
-		for(int pStep = pStart; pStep < (pitchSteps + 1); pStep++) {
-			for(int yStep = yStart; yStep < yawSteps; yStep++) {
-				GenerateFace("" + (char)(65 + yStep) + (pStep), GetCoords(yStep * yDelta, pStep * pDelta));
+		bool color = false;
+
+		for(int pStep = pStart; pStep < (pitchSteps + 1); pStep++, color = !color) {
+			for(int yStep = yStart; yStep < yawSteps; yStep++, color = !color) {
+				GenerateSquare("" + (char)(65 + yStep) + (pStep), color ? 1 : 2, GetCoords(yStep * yDelta, pStep * pDelta));
 
 				if(useDelay) {
 					yield return new WaitForSeconds(delay);
@@ -41,22 +44,42 @@ public class BoardGen : MonoBehaviour {
 			}
 		}
 
-		GenerateFace("Omega", GetCoords(0, Mathf.PI));
+		GenerateSquare("Omega", 0, GetCoords(0, Mathf.PI));
 
 		genCompleteEvent.Invoke();
 	}
 
 
-	GameObject GenerateFace(string spacialPosition, Vector3 position) {
+	GameObject GenerateSquare(string spatialPosition, int color, Vector3 position) {
+		GameObject square = new GameObject(spatialPosition);
+		square.transform.parent = transform;
+		square.transform.localPosition = position;
+		square.transform.localRotation = Quaternion.LookRotation(position - transform.localPosition);
+		square.transform.Rotate(90f, 0f, 0f);
+
 		GameObject face = GameObject.CreatePrimitive(PrimitiveType.Cube);
-		face.name = spacialPosition;
+		face.transform.parent = square.transform;
+		face.transform.localPosition = Vector3.zero;
+		face.transform.localRotation = Quaternion.identity;
+		face.transform.localScale = CalculateScale(square.transform.localPosition);
 
-		face.transform.parent = transform;
-		face.transform.localPosition = position;
-		face.transform.localRotation = Quaternion.LookRotation(position - transform.localPosition);
-		face.transform.localScale = CalculateScale(position);
+		Color col = Color.blue;
 
-		return face;
+		switch(color) {
+			case 0:
+				col = Color.grey;
+				break;
+			case 1:
+				col = Color.white;
+				break;
+			case 2:
+				col = Color.black;
+				break;
+		}
+
+		face.GetComponent<Renderer>().material.color = col;
+
+		return square;
 	}
 
 	Vector3 GetCoords(float yaw, float pitch) {
@@ -81,6 +104,6 @@ public class BoardGen : MonoBehaviour {
 			scale = Mathf.Log(4 + distanceUnit + Mathf.Pow(distanceUnit, 2f), 10f);
 		}
 
-		return new Vector3(scale, scale, thinness);
+		return new Vector3(scale, thinness, scale);
 	}
 }

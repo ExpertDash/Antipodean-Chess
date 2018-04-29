@@ -36,6 +36,7 @@ GameObject:
   serializedVersion: 5
   m_Component:
   - component: {fileID: 4903598337407542}
+  - component: {fileID: 64397700618643304}
   m_Layer: 0
   m_Name: Rook
   m_TagString: Untagged
@@ -139,4 +140,18 @@ MeshFilter:
   m_PrefabParentObject: {fileID: 0}
   m_PrefabInternal: {fileID: 100100000}
   m_GameObject: {fileID: 1325673274462194}
+  m_Mesh: {fileID: 4300000, guid: a919bfb9cbdfafb44b9c4a5e4263a0dc, type: 3}
+--- !u!64 &64397700618643304
+MeshCollider:
+  m_ObjectHideFlags: 1
+  m_PrefabParentObject: {fileID: 0}
+  m_PrefabInternal: {fileID: 100100000}
+  m_GameObject: {fileID: 1770494573416678}
+  m_Material: {fileID: 0}
+  m_IsTrigger: 0
+  m_Enabled: 1
+  serializedVersion: 3
+  m_Convex: 0
+  m_CookingOptions: 14
+  m_SkinWidth: 0.01
   m_Mesh: {fileID: 4300000, guid: a919bfb9cbdfafb44b9c4a5e4263a0dc, type: 3}

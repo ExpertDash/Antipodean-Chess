@@ -27,4 +27,8 @@ public class GamePiece : MonoBehaviour {
 
 		gameObject.transform.GetChild(0).GetChild(0).gameObject.GetComponent<Renderer>().material.color = color;
     }
+
+    public string GetSquare() {
+        return transform.parent.gameObject.name;
+    }
 }

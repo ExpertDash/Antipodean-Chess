@@ -6,12 +6,14 @@ public class GameBoard : MonoBehaviour {
     public class Square {
         public string name;
         public GameObject obj;
+        public GameObject tile;
         public GameObject piece;
         public GameObject antiPiece;
 
-        public Square(string name, GameObject obj) {
+        public Square(string name, GameObject obj, GameObject tile) {
             this.name = name;
             this.obj = obj;
+            this.tile = tile;
         }
     }
 
@@ -32,7 +34,7 @@ public class GameBoard : MonoBehaviour {
 
             for(int i = 0; i < gen.gameObject.transform.childCount; i++) {
                 GameObject square = gen.transform.GetChild(i).gameObject;
-                squares[i] = new Square(square.name, square);
+                squares[i] = new Square(square.name, square, square.transform.GetChild(0).gameObject);
             }
 
             SetupPieces();
@@ -77,6 +79,27 @@ public class GameBoard : MonoBehaviour {
         Place("F7", 2, GamePiece.Type.PAWN);
         Place("G7", 2, GamePiece.Type.PAWN);
         Place("H7", 2, GamePiece.Type.PAWN);
+
+
+        /*
+        object[] data = Remove("Alpha");
+        Debug.Log(data[0] + "_" + data[1]);
+        */
+    }
+
+    object[] Remove(string location) {
+        Square square = GetSquare(location);
+
+        if(square != null && square.piece != null) {
+            object[] data = {square.piece.GetComponent<GamePiece>().type, square.piece.GetComponent<GamePiece>().faction};
+
+            Destroy(square.piece);
+            square.piece = null;
+
+            return data;
+        }
+
+        return new object[0];
     }
 
     void Place(string location, int faction, GamePiece.Type type) {
@@ -127,7 +150,7 @@ public class GameBoard : MonoBehaviour {
         }
     }
 
-    Square GetSquare(string name) {
+    public Square GetSquare(string name) {
         foreach(Square square in squares) {
             if(square.name == name) {
                 return square;

@@ -260,6 +260,7 @@ GameObject:
   m_Component:
   - component: {fileID: 405693842}
   - component: {fileID: 405693841}
+  - component: {fileID: 405693843}
   - component: {fileID: 405693840}
   - component: {fileID: 405693839}
   m_Layer: 0
@@ -301,7 +302,7 @@ Camera:
     height: 1
   near clip plane: 0.3
   far clip plane: 1000
-  field of view: 60
+  field of view: 50
   orthographic: 0
   orthographic size: 5
   m_Depth: -1
@@ -332,6 +333,25 @@ Transform:
   m_Father: {fileID: 0}
   m_RootOrder: 0
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &405693843
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_PrefabParentObject: {fileID: 0}
+  m_PrefabInternal: {fileID: 0}
+  m_GameObject: {fileID: 405693838}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 6480a814b4fdbee4c827e4883dcc8860, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  board: {fileID: 101067412}
+  selectedPiece: {fileID: 0}
+  rotationSpeed: 100
+  zoomSpeed: 15
+  minDistanceFromCenter: 5
+  maxDistanceFromCenter: 20
+  mouseButtonRotate: 1
+  mouseButtonSelect: 0
 --- !u!1 &414519575
 GameObject:
   m_ObjectHideFlags: 0

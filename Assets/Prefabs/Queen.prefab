@@ -34,6 +34,7 @@ GameObject:
   serializedVersion: 5
   m_Component:
   - component: {fileID: 4793210750931524}
+  - component: {fileID: 64094469330003830}
   m_Layer: 0
   m_Name: Queen
   m_TagString: Untagged
@@ -139,4 +140,18 @@ MeshFilter:
   m_PrefabParentObject: {fileID: 0}
   m_PrefabInternal: {fileID: 100100000}
   m_GameObject: {fileID: 1679175914964958}
+  m_Mesh: {fileID: 4300000, guid: fe59ede23350758468e930609ff95f9b, type: 3}
+--- !u!64 &64094469330003830
+MeshCollider:
+  m_ObjectHideFlags: 1
+  m_PrefabParentObject: {fileID: 0}
+  m_PrefabInternal: {fileID: 100100000}
+  m_GameObject: {fileID: 1374591332135294}
+  m_Material: {fileID: 0}
+  m_IsTrigger: 0
+  m_Enabled: 1
+  serializedVersion: 3
+  m_Convex: 0
+  m_CookingOptions: 14
+  m_SkinWidth: 0.01
   m_Mesh: {fileID: 4300000, guid: fe59ede23350758468e930609ff95f9b, type: 3}

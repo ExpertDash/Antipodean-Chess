@@ -10,7 +10,15 @@ public class GamePiece : MonoBehaviour {
         KING
     }
 
+    public enum Direction {
+        UP, DOWN, LEFT, RIGHT,
+        UP_LEFT, UP_RIGHT, DOWN_LEFT, DOWN_RIGHT
+    }
+
     public Type type = Type.PAWN;
+    public Direction direction = Direction.DOWN;
+
+    //0 none, 1 white, 2 black
     public int faction = 0;
 
     public void SetColor() {
@@ -30,5 +38,9 @@ public class GamePiece : MonoBehaviour {
 
     public string GetSquare() {
         return transform.parent.gameObject.name;
+    }
+
+    public bool RequiresDirectPath() {
+        return type == Type.KNIGHT ? false : true;
     }
 }

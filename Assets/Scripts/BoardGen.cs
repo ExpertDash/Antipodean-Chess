@@ -10,7 +10,6 @@ public class BoardGen : MonoBehaviour {
 
 	public bool useProceduralGeneration = false;
 
-	[HideInInspector]
 	public UnityEvent genCompleteEvent;
 
 	void Start() {

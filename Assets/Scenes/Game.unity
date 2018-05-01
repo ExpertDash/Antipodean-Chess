@@ -224,10 +224,21 @@ MonoBehaviour:
   radius: 5
   delay: 0.025
   thinness: 0.01
-  useProceduralGeneration: 1
+  useProceduralGeneration: 0
   genCompleteEvent:
     m_PersistentCalls:
-      m_Calls: []
+      m_Calls:
+      - m_Target: {fileID: 101067412}
+        m_MethodName: Create
+        m_Mode: 1
+        m_Arguments:
+          m_ObjectArgument: {fileID: 0}
+          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
+          m_IntArgument: 0
+          m_FloatArgument: 0
+          m_StringArgument: Create
+          m_BoolArgument: 0
+        m_CallState: 2
     m_TypeName: UnityEngine.Events.UnityEvent, UnityEngine.CoreModule, Version=0.0.0.0,
       Culture=neutral, PublicKeyToken=null
 --- !u!114 &101067412
@@ -251,6 +262,10 @@ MonoBehaviour:
     type: 2}
   kingPrefab: {fileID: 1412742195942642, guid: c8f37ec6f47c6714e950ac3ad8513fa6, type: 2}
   squares: []
+  showSquareNames: 1
+  nameContainer: {fileID: 0}
+  nameHeightOffset: 1.25
+  factions: 0
 --- !u!1 &405693838
 GameObject:
   m_ObjectHideFlags: 0
@@ -345,13 +360,15 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   board: {fileID: 101067412}
-  selectedPiece: {fileID: 0}
+  selectedSquare: {fileID: 0}
   rotationSpeed: 100
   zoomSpeed: 15
   minDistanceFromCenter: 5
   maxDistanceFromCenter: 20
   mouseButtonRotate: 1
   mouseButtonSelect: 0
+  selectionSquareColor: {r: 0, g: 1, b: 0, a: 1}
+  possiblePaths: []
 --- !u!1 &414519575
 GameObject:
   m_ObjectHideFlags: 0

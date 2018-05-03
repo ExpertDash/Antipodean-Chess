@@ -3,99 +3,18 @@ using System.Collections.Generic;
 
 [RequireComponent(typeof(BoardGen))]
 public class GameBoard : MonoBehaviour {
-    [System.Serializable]
-    public class Square {
-        public string name;
-        public GameObject obj;
-        public GameObject tile;
-        public GameObject piece;
-        public GameObject antiPiece;
-        public Color color;
-
-        public Square(string name, GameObject obj, GameObject tile) {
-            this.name = name;
-            this.obj = obj;
-            this.tile = tile;
-        }
-    }
-
-    public GameObject pawnPrefab,
-                     knightPrefab,
-                     bishopPrefab,
-                     rookPrefab,
-                     queenPrefab,
-                     kingPrefab;
-
-    public Square[] squares;
-
-    public bool showSquareNames = true;
-    public GameObject nameContainer;
-    public float nameHeightOffset = 1f;
+    public GameObject pawnPrefab, knightPrefab, bishopPrefab, rookPrefab, queenPrefab, kingPrefab;
 
     public int factions;
     public List<GamePiece>[] factionJails;
 
-    public void Create() {
-        BoardGen gen = GetComponent<BoardGen>();
-        nameContainer = null;
+    [HideInInspector]
+    public GameObject nameContainer;
+    public bool showSquareNames = true;
+    public float nameHeightOffset = 1f;
+    public Color squareNameColor = Color.blue;
 
-        GameRules.maxRow = GameRules.minRow + gen.pitchSteps - 1;
-        GameRules.maxColumn = (char)(GameRules.minColumn + gen.yawSteps - 1);
-
-        factions = 2;
-        factionJails = new List<GamePiece>[factions];
-        for(int i = 0; i < factions; i++) {
-			factionJails[i] = new List<GamePiece>();
-		}
-
-        if(showSquareNames) {
-            nameContainer = new GameObject();
-            nameContainer.name = "Names";
-            nameContainer.transform.parent = null;
-        }
-
-        squares = new Square[gen.gameObject.transform.childCount];
-
-        for(int i = 0; i < gen.gameObject.transform.childCount; i++) {
-            GameObject square = gen.transform.GetChild(i).gameObject;
-
-            if(showSquareNames) {
-                GameObject nameRender = new GameObject();
-                nameRender.transform.localScale = Vector3.one;
-                nameRender.transform.position = square.transform.position + square.transform.up * nameHeightOffset;
-                nameRender.transform.localRotation = Quaternion.identity;
-
-                TextMesh textMesh = nameRender.AddComponent<TextMesh>();
-                textMesh.text = square.name;
-                textMesh.characterSize = 0.25f;
-                textMesh.anchor = TextAnchor.MiddleCenter;
-
-                nameRender.GetComponent<Renderer>().material.shader = Shader.Find("GUI/3D Text");
-                nameRender.GetComponent<Renderer>().material.color = Color.blue;
-
-                nameRender.name = "Name for " + square.name;
-                nameRender.transform.parent = nameContainer.transform;
-            }
-
-            squares[i] = new Square(square.name, square, square.transform.GetChild(0).gameObject);
-            squares[i].color = squares[i].tile.GetComponent<Renderer>().material.color;
-            squares[i].tile.name = "Tile";
-        }
-
-        nameContainer.transform.parent = transform;
-        nameContainer.transform.localPosition = Vector3.zero;
-        nameContainer.transform.localRotation = Quaternion.identity;
-
-        SetupPieces();
-    }
-
-    void Update() {
-        if(showSquareNames) {
-            for(int i = 0; i < nameContainer.transform.childCount; i++) {
-                nameContainer.transform.GetChild(i).transform.rotation = Quaternion.LookRotation(-Camera.main.transform.position, Camera.main.transform.up);
-            }
-        }
-    }
+    public Material squareMaterial;
 
     void SetupPieces() {
         Place("Alpha", 1, GamePiece.Type.KING);
@@ -143,6 +62,69 @@ public class GameBoard : MonoBehaviour {
         */
     }
 
+    public void Create() {
+        BoardGen gen = GetComponent<BoardGen>();
+        nameContainer = null;
+
+        GameRules.maxRow = GameRules.minRow + gen.pitchSteps - 1;
+        GameRules.maxColumn = (char)(GameRules.minColumn + gen.yawSteps - 1);
+
+        factionJails = new List<GamePiece>[factions];
+        for(int i = 0; i < factions; i++) {
+			factionJails[i] = new List<GamePiece>();
+		}
+
+        if(showSquareNames) {
+            nameContainer = new GameObject();
+            nameContainer.name = "Names";
+            nameContainer.transform.parent = null;
+        }
+
+        for(int i = 0; i < gen.gameObject.transform.childCount; i++) {
+            Square square = gen.transform.GetChild(i).gameObject.AddComponent<Square>();
+            square.tile = square.gameObject.transform.GetChild(0).gameObject;
+            square.tile.name = "Tile";
+            square.tileColor = square.tile.GetComponent<Renderer>().material.color;
+            square.tile.GetComponent<Renderer>().material = squareMaterial;
+            square.tile.GetComponent<Renderer>().material.color = square.tileColor;
+
+            if(showSquareNames) {
+                GameObject nameRender = new GameObject();
+                nameRender.transform.localScale = Vector3.one;
+                nameRender.transform.position = square.gameObject.transform.position + square.gameObject.transform.up * nameHeightOffset;
+                nameRender.transform.localRotation = Quaternion.identity;
+
+                TextMesh textMesh = nameRender.AddComponent<TextMesh>();
+                textMesh.text = square.gameObject.name;
+                textMesh.characterSize = 0.01f;
+                textMesh.fontSize = 350;
+                textMesh.anchor = TextAnchor.MiddleCenter;
+
+                nameRender.GetComponent<Renderer>().material.shader = Shader.Find("GUI/3D Text");
+                nameRender.GetComponent<Renderer>().material.color = squareNameColor;
+
+                nameRender.name = "Name for " + square.gameObject.name;
+                nameRender.transform.parent = nameContainer.transform;
+            }
+        }
+
+        if(showSquareNames) {
+            nameContainer.transform.parent = transform;
+            nameContainer.transform.localPosition = Vector3.zero;
+            nameContainer.transform.localRotation = Quaternion.identity;
+        }
+
+        SetupPieces();
+    }
+
+    void Update() {
+        if(showSquareNames) {
+            for(int i = 0; i < nameContainer.transform.childCount; i++) {
+                nameContainer.transform.GetChild(i).transform.rotation = Quaternion.LookRotation(-Camera.main.transform.position, Camera.main.transform.up);
+            }
+        }
+    }
+
     public object[] Remove(string location) {
         Square square = GetSquare(location);
 
@@ -163,36 +145,31 @@ public class GameBoard : MonoBehaviour {
     }
 
     public void Place(string location, int faction, GamePiece.Type type) {
-        GameObject piece = null;
+        GameObject prefab = null, piece = null;
 
         switch(type) {
             case GamePiece.Type.PAWN:
-                piece = Instantiate(pawnPrefab);
-                piece.name = pawnPrefab.name;
+                prefab = pawnPrefab;
                 break;
             case GamePiece.Type.KNIGHT:
-                piece = Instantiate(knightPrefab);
-                piece.name = knightPrefab.name;
+                prefab = knightPrefab;
                 break;
             case GamePiece.Type.BISHOP:
-                piece = Instantiate(bishopPrefab);
-                piece.name = bishopPrefab.name;
+                prefab = bishopPrefab;
                 break;
             case GamePiece.Type.ROOK:
-                piece = Instantiate(rookPrefab);
-                piece.name = rookPrefab.name;
+                prefab = rookPrefab;
                 break;
             case GamePiece.Type.QUEEN:
-                piece = Instantiate(queenPrefab);
-                piece.name = queenPrefab.name;
+                prefab = queenPrefab;
                 break;
             case GamePiece.Type.KING:
-                piece = Instantiate(kingPrefab);
-                piece.name = kingPrefab.name;
-                break;
-            default:
+                prefab = kingPrefab;
                 break;
         }
+
+        piece = Instantiate(prefab);
+        piece.name = prefab.name;
 
         Square square = GetSquare(location);
 
@@ -203,7 +180,7 @@ public class GameBoard : MonoBehaviour {
             gp.direction = faction == 1 ? GamePiece.Direction.DOWN : GamePiece.Direction.UP;
             gp.SetColor();
 
-            piece.transform.SetParent(square.obj.transform);
+            piece.transform.SetParent(square.gameObject.transform);
             piece.transform.localRotation = faction == 1 ? Quaternion.identity : Quaternion.Euler(Vector3.up * 180f);
             piece.transform.localPosition = Vector3.zero;
 
@@ -212,12 +189,13 @@ public class GameBoard : MonoBehaviour {
     }
 
     public Square GetSquare(string name) {
-        foreach(Square square in squares) {
-            if(square.name == name) {
-                return square;
-            }
+        if(name == "Alpha" || name == "Omega") {
+            return transform.Find(name).gameObject.GetComponent<Square>();
         }
 
-        return null;
+        int startIndex = transform.Find("Alpha").GetSiblingIndex() + 1;
+        int index = startIndex + (int.Parse("" + name[1]) - 1) * GameRules.maxRow + (name[0] - GameRules.minColumn);
+
+        return transform.GetChild(index).gameObject.GetComponent<Square>();
     }
 }

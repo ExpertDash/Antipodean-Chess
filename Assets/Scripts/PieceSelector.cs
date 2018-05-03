@@ -19,50 +19,54 @@ public class PieceSelector : MonoBehaviour {
 	public string[] possiblePaths;
 
 	void SetPaths(bool state) {
-		GameBoard.Square selectedSquare = GetSelectedSquare();
+		Square selectedSquare = GetSelectedSquare();
 
 		if(selectedSquare != null && selectedSquare.piece != null) {
 			possiblePaths = GameRules.GetPaths(selectedSquare.piece.GetComponent<GamePiece>(), selectedSquare.name);
 
 			foreach(string squareName in possiblePaths) {
-				GameBoard.Square square = board.GetSquare(squareName);
-				square.tile.GetComponent<Renderer>().material.color = state ? selectionSquareColor : square.color;
+				Square square = board.GetSquare(squareName);
+				square.tile.GetComponent<Renderer>().material.color = state ? selectionSquareColor : square.tileColor;
 			}
 		}
 	}
 
-	GameBoard.Square GetSelectedSquare() {
+	Square GetSelectedSquare() {
 		return selectedSquare != null ? board.GetSquare(selectedSquare.name) : null;
+	}
+
+	void OnSquareSelected(RaycastHit hit) {
+		GameObject tile;
+
+		if(hit.transform.GetComponent<GamePiece>() != null) {
+			tile = board.GetSquare(hit.transform.GetComponent<GamePiece>().GetSquare()).tile;
+		} else {
+			tile = hit.transform.gameObject;
+		}
+
+		GameObject square = tile.transform.parent.gameObject;
+
+		if(GetSelectedSquare() != null && GetSelectedSquare().piece != null && Array.Exists(possiblePaths, name => name == square.name)) {
+			board.Place(square.name, GetSelectedSquare().piece.GetComponent<GamePiece>());
+			board.Remove(GetSelectedSquare().name);
+			selectedSquare = null;
+		} else {
+			tile.GetComponent<Renderer>().material.color = selectionSquareColor;
+			selectedSquare = square;
+			SetPaths(true);
+		}
 	}
 
 	void Update() {
 		if(Input.GetMouseButtonDown(mouseButtonSelect)) {
 			if(selectedSquare != null) {
 				SetPaths(false);
-				selectedSquare.transform.GetChild(0).gameObject.GetComponent<Renderer>().material.color = GetSelectedSquare().color;
+				selectedSquare.transform.GetChild(0).gameObject.GetComponent<Renderer>().material.color = GetSelectedSquare().tileColor;
 			}
 
 			RaycastHit hit;
 			if(Physics.Raycast(Camera.main.ScreenPointToRay(Input.mousePosition), out hit)) {
-				GameObject tile;
-
-				if(hit.transform.GetComponent<GamePiece>() != null) {
-					tile = board.GetSquare(hit.transform.GetComponent<GamePiece>().GetSquare()).tile;
-				} else {
-					tile = hit.transform.gameObject;
-				}
-
-				GameObject square = tile.transform.parent.gameObject;
-
-				if(GetSelectedSquare() != null && GetSelectedSquare().piece != null && Array.Exists(possiblePaths, name => name == square.name)) {
-					board.Place(square.name, GetSelectedSquare().piece.GetComponent<GamePiece>());
-					board.Remove(GetSelectedSquare().name);
-					selectedSquare = null;
-				} else {
-					tile.GetComponent<Renderer>().material.color = selectionSquareColor;
-					selectedSquare = square;
-					SetPaths(true);
-				}
+				OnSquareSelected(hit);
 		   } else {
 			   selectedSquare = null;
 		   }

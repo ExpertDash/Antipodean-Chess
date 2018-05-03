@@ -56,11 +56,11 @@ public class BoardGen : MonoBehaviour {
 		square.transform.localRotation = Quaternion.LookRotation(position - transform.localPosition);
 		square.transform.Rotate(90f, 0f, 0f);
 
-		GameObject face = GameObject.CreatePrimitive(PrimitiveType.Cube);
-		face.transform.parent = square.transform;
-		face.transform.localPosition = Vector3.zero;
-		face.transform.localRotation = Quaternion.identity;
-		face.transform.localScale = CalculateScale(square.transform.localPosition);
+		GameObject tile = GameObject.CreatePrimitive(PrimitiveType.Cube);
+		tile.transform.parent = square.transform;
+		tile.transform.localPosition = Vector3.zero;
+		tile.transform.localRotation = Quaternion.identity;
+		tile.transform.localScale = CalculateScale(square.transform.localPosition);
 
 		Color col = Color.blue;
 
@@ -76,7 +76,7 @@ public class BoardGen : MonoBehaviour {
 				break;
 		}
 
-		face.GetComponent<Renderer>().material.color = col;
+		tile.GetComponent<Renderer>().material.color = col;
 
 		return square;
 	}

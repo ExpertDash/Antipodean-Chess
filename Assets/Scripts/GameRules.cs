@@ -169,10 +169,10 @@ public class GameRules {
 				Merge(ref paths, GetSquaresBetween(piece.GetSquare(), GamePiece.Direction.RIGHT, MAX_DISTANCE));
                 break;
             case GamePiece.Type.KING:
-				Merge(ref paths, GetSquareAt(piece.GetSquare(), GamePiece.Direction.UP_LEFT, 1));
-				Merge(ref paths, GetSquareAt(piece.GetSquare(), GamePiece.Direction.UP_RIGHT, 1));
-				Merge(ref paths, GetSquareAt(piece.GetSquare(), GamePiece.Direction.DOWN_LEFT, 1));
-				Merge(ref paths, GetSquareAt(piece.GetSquare(), GamePiece.Direction.DOWN_RIGHT, 1));
+				Merge(ref paths, GetSquareAt(piece.GetSquare(), GamePiece.Direction.UP, 1));
+				Merge(ref paths, GetSquareAt(piece.GetSquare(), GamePiece.Direction.DOWN, 1));
+				Merge(ref paths, GetSquareAt(piece.GetSquare(), GamePiece.Direction.LEFT, 1));
+				Merge(ref paths, GetSquareAt(piece.GetSquare(), GamePiece.Direction.RIGHT, 1));
 				Merge(ref paths, GetSquareAt(piece.GetSquare(), GamePiece.Direction.UP_LEFT, 1));
 				Merge(ref paths, GetSquareAt(piece.GetSquare(), GamePiece.Direction.UP_RIGHT, 1));
 				Merge(ref paths, GetSquareAt(piece.GetSquare(), GamePiece.Direction.DOWN_LEFT, 1));

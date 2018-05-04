@@ -225,7 +225,7 @@ MonoBehaviour:
   radius: 5
   delay: 0.025
   thinness: 0.01
-  useProceduralGeneration: 0
+  useProceduralGeneration: 1
   genCompleteEvent:
     m_PersistentCalls:
       m_Calls:
@@ -263,6 +263,9 @@ MonoBehaviour:
     type: 2}
   kingPrefab: {fileID: 1412742195942642, guid: c8f37ec6f47c6714e950ac3ad8513fa6, type: 2}
   boardLayout: {fileID: 101067413}
+  isFlipside: 0
+  normalSkybox: {r: 0.8745098, g: 0.8745098, b: 0.8745098, a: 1}
+  flipsideSkybox: {r: 0.08235294, g: 0.08235294, b: 0.08235294, a: 1}
   factions: 2
   nameContainer: {fileID: 0}
   showSquareNames: 1
@@ -280,6 +283,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: b8c8b6f6c443f51488a670f0ece24d63, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  useDefaultLayout: 1
   placements:
   - square: Alpha
     faction: 1
@@ -383,6 +387,108 @@ MonoBehaviour:
   - square: H7
     faction: 2
     piece: 0
+  - square: -Alpha
+    faction: 1
+    piece: 4
+  - square: -Alpha
+    faction: 1
+    piece: 4
+  - square: -Alpha
+    faction: 1
+    piece: 4
+  - square: -Alpha
+    faction: 1
+    piece: 4
+  - square: -Alpha
+    faction: 1
+    piece: 4
+  - square: -Alpha
+    faction: 1
+    piece: 4
+  - square: -Alpha
+    faction: 1
+    piece: 4
+  - square: -Alpha
+    faction: 1
+    piece: 4
+  - square: -Alpha
+    faction: 1
+    piece: 4
+  - square: -Alpha
+    faction: 1
+    piece: 4
+  - square: -Alpha
+    faction: 1
+    piece: 4
+  - square: -Alpha
+    faction: 1
+    piece: 4
+  - square: -Alpha
+    faction: 1
+    piece: 4
+  - square: -Alpha
+    faction: 1
+    piece: 4
+  - square: -Alpha
+    faction: 1
+    piece: 4
+  - square: -Alpha
+    faction: 1
+    piece: 4
+  - square: -Alpha
+    faction: 1
+    piece: 4
+  - square: -Alpha
+    faction: 1
+    piece: 4
+  - square: -Alpha
+    faction: 1
+    piece: 4
+  - square: -Alpha
+    faction: 1
+    piece: 4
+  - square: -Alpha
+    faction: 1
+    piece: 4
+  - square: -Alpha
+    faction: 1
+    piece: 4
+  - square: -Alpha
+    faction: 1
+    piece: 4
+  - square: -Alpha
+    faction: 1
+    piece: 4
+  - square: -Alpha
+    faction: 1
+    piece: 4
+  - square: -Alpha
+    faction: 1
+    piece: 4
+  - square: -Alpha
+    faction: 1
+    piece: 4
+  - square: -Alpha
+    faction: 1
+    piece: 4
+  - square: -Alpha
+    faction: 1
+    piece: 4
+  - square: -Alpha
+    faction: 1
+    piece: 4
+  - square: -Alpha
+    faction: 1
+    piece: 4
+  - square: -Alpha
+    faction: 1
+    piece: 4
+  - square: -Alpha
+    faction: 1
+    piece: 4
+  - square: -Alpha
+    faction: 1
+    piece: 4
 --- !u!1 &405693838
 GameObject:
   m_ObjectHideFlags: 0
@@ -425,7 +531,7 @@ Camera:
   m_Enabled: 1
   serializedVersion: 2
   m_ClearFlags: 2
-  m_BackGroundColor: {r: 0.7372549, g: 0.7764706, b: 0.8, a: 1}
+  m_BackGroundColor: {r: 0.8745098, g: 0.8745098, b: 0.8745098, a: 1}
   m_NormalizedViewPortRect:
     serializedVersion: 2
     x: 0
@@ -487,6 +593,7 @@ MonoBehaviour:
   maxDistanceFromCenter: 20
   mouseButtonRotate: 1
   mouseButtonSelect: 0
+  flipButton: 102
   moveSquareColor: {r: 0, g: 1, b: 0, a: 1}
   attackSquareColor: {r: 1, g: 0.92156863, b: 0.015686275, a: 1}
   wrongSquareColor: {r: 1, g: 0, b: 0, a: 1}

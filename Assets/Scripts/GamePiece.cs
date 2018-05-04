@@ -1,5 +1,6 @@
 using UnityEngine;
 
+//PAWN MUST BECOME SOMETHING ELSE AT ALPHA/OMEGA DUE TO NATURE OF MOVEMENT LIMITING TO ONLY FORWARDS (UP/DOWN)
 public class GamePiece : MonoBehaviour {
     public enum Type {
         PAWN,
@@ -42,5 +43,9 @@ public class GamePiece : MonoBehaviour {
 
     public bool RequiresDirectPath() {
         return type == Type.KNIGHT ? false : true;
+    }
+
+    public Quaternion GetAppropriateRotation(bool flipside) {
+        return Quaternion.Euler(flipside ? new Vector3(180f, faction == 1 ? 180f : 0f, 0f) : new Vector3(0, faction == 1 ? 0 : 180f, 0f));
     }
 }

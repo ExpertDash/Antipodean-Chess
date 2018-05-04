@@ -20,6 +20,8 @@ public class PieceSelector : MonoBehaviour {
 	public int mouseButtonRotate = 1;
 	public int mouseButtonSelect = 0;
 
+	public KeyCode flipButton = KeyCode.F;
+
 	public Color moveSquareColor = Color.green;
 	public Color attackSquareColor = Color.yellow;
 	public Color wrongSquareColor = Color.red;
@@ -33,8 +35,8 @@ public class PieceSelector : MonoBehaviour {
 	void SetPaths(bool state) {
 		Square selectedSquare = GetSelectedSquare();
 
-		if(selectedSquare != null && selectedSquare.piece != null) {
-			GamePiece piece = selectedSquare.piece.GetComponent<GamePiece>();
+		if(selectedSquare != null && selectedSquare.GetSurfacePiece(board) != null) {
+			GamePiece piece = selectedSquare.GetSurfacePiece(board).GetComponent<GamePiece>();
 
 			string[] movementPaths = GameRules.GetPaths(piece, selectedSquare.name);
 			string[] attackPaths = GameRules.GetAttackPaths(piece, selectedSquare.name);
@@ -44,7 +46,7 @@ public class PieceSelector : MonoBehaviour {
 			foreach(string squareName in movementPaths) {
 				Square square = board.GetSquare(squareName);
 
-				if(square.piece == null) {
+				if(square.GetSurfacePiece(board) == null) {
 					paths.Add(squareName);
 					square.tile.GetComponent<Renderer>().material.color = state ? moveSquareColor : square.tileColor;
 				}
@@ -53,7 +55,7 @@ public class PieceSelector : MonoBehaviour {
 			foreach(string squareName in attackPaths) {
 				Square square = board.GetSquare(squareName);
 
-				if(square.piece != null && square.piece.GetComponent<GamePiece>().faction != faction) {
+				if(square.GetSurfacePiece(board) != null && square.GetSurfacePiece(board).GetComponent<GamePiece>().faction != faction) {
 					paths.Add(squareName);
 					square.tile.GetComponent<Renderer>().material.color = state ? attackSquareColor : square.tileColor;
 				}
@@ -78,8 +80,8 @@ public class PieceSelector : MonoBehaviour {
 
 		GameObject square = tile.transform.parent.gameObject;
 
-		if(GetSelectedSquare() != null && GetSelectedSquare().piece != null && Array.Exists(possiblePaths, name => name == square.name)) {
-			board.Move(GetSelectedSquare().name, square.name, GetSelectedSquare().piece.GetComponent<GamePiece>());
+		if(GetSelectedSquare() != null && GetSelectedSquare().GetSurfacePiece(board) != null && Array.Exists(possiblePaths, name => name == square.name)) {
+			board.Move((board.isFlipside ? "-" : "") + GetSelectedSquare().name, (board.isFlipside ? "-" : "") + square.name, GetSelectedSquare().GetSurfacePiece(board).GetComponent<GamePiece>());
 			selectedSquare = null;
 
 			turnSystem.NextTurn();
@@ -90,7 +92,7 @@ public class PieceSelector : MonoBehaviour {
 				SetPaths(false);
 				selectedSquare.transform.GetChild(0).gameObject.GetComponent<Renderer>().material.color = GetSelectedSquare().tileColor;
 				selectedSquare = null;
-			} else if(actualSquare.piece != null && actualSquare.piece.GetComponent<GamePiece>().faction == faction) {
+			} else if(actualSquare.GetSurfacePiece(board) != null && actualSquare.GetSurfacePiece(board).GetComponent<GamePiece>().faction == faction) {
 				tile.GetComponent<Renderer>().material.color = moveSquareColor;
 				selectedSquare = square;
 				SetPaths(true);
@@ -133,6 +135,8 @@ public class PieceSelector : MonoBehaviour {
 		if(Input.GetMouseButtonDown(mouseButtonRotate)) ToggleRotation(true);
 		if(Input.GetMouseButtonUp(mouseButtonRotate)) ToggleRotation(false);
 		if(Input.GetMouseButton(mouseButtonRotate)) ExecuteRotation();
+
+		if(Input.GetKeyUp(flipButton)) board.Flipside();
 
 		if(Input.mouseScrollDelta.y != 0) {
 			if(Input.mouseScrollDelta.y > 0 && Vector3.Distance(transform.position, board.transform.position) <= minDistanceFromCenter) {

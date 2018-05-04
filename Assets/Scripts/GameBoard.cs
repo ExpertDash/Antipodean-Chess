@@ -1,4 +1,5 @@
 using UnityEngine;
+using System.Collections;
 using System.Collections.Generic;
 
 [RequireComponent(typeof(BoardGen))]
@@ -6,6 +7,15 @@ public class GameBoard : MonoBehaviour {
     public GameObject pawnPrefab, knightPrefab, bishopPrefab, rookPrefab, queenPrefab, kingPrefab;
 
     public BoardLayout boardLayout;
+    public BoardGen boardGen {
+        get {
+            return GetComponent<BoardGen>();
+        }
+    }
+
+    public bool isFlipside;
+    private bool finishedFlipAnimation;
+    public Color normalSkybox = Color.gray, flipsideSkybox = Color.black;
 
     public int factions;
     public List<GamePiece>[] factionJails;
@@ -18,17 +28,21 @@ public class GameBoard : MonoBehaviour {
     public Material squareMaterial;
 
     void SetupPieces() {
-        foreach(BoardLayout.Placement place in boardLayout.placements) {
-            Place(place.square, place.faction, place.piece);
+        if(boardLayout.useDefaultLayout) {
+            boardLayout.EnactDefaultLayout(Place);
+        } else {
+            foreach(BoardLayout.Placement place in boardLayout.placements) {
+                Place(place.square, place.faction, place.piece);
+            }
         }
     }
 
     public void Create() {
-        BoardGen gen = GetComponent<BoardGen>();
+        Camera.main.backgroundColor = normalSkybox;
         nameContainer = null;
 
-        GameRules.maxRow = GameRules.minRow + gen.pitchSteps - 1;
-        GameRules.maxColumn = (char)(GameRules.minColumn + gen.yawSteps - 1);
+        GameRules.maxRow = GameRules.minRow + boardGen.pitchSteps - 1;
+        GameRules.maxColumn = (char)(GameRules.minColumn + boardGen.yawSteps - 1);
 
         factionJails = new List<GamePiece>[factions];
         for(int i = 0; i < factions; i++) {
@@ -41,8 +55,8 @@ public class GameBoard : MonoBehaviour {
             nameContainer.transform.parent = null;
         }
 
-        for(int i = 0; i < gen.gameObject.transform.childCount; i++) {
-            Square square = gen.transform.GetChild(i).gameObject.AddComponent<Square>();
+        for(int i = 0; i < boardGen.gameObject.transform.childCount; i++) {
+            Square square = boardGen.transform.GetChild(i).gameObject.AddComponent<Square>();
             square.tile = square.gameObject.transform.GetChild(0).gameObject;
             square.tile.name = "Tile";
             square.tileColor = square.tile.GetComponent<Renderer>().material.color;
@@ -76,6 +90,82 @@ public class GameBoard : MonoBehaviour {
         }
 
         SetupPieces();
+
+        finishedFlipAnimation = true;
+    }
+
+    public void Flipside() {
+        if(finishedFlipAnimation) {
+            finishedFlipAnimation = false;
+            isFlipside = !isFlipside;
+            StartCoroutine((AnimateFlipside(1f, 10f)));
+        }
+    }
+
+    IEnumerator AnimateFlipside(float rowDelay, float speed) {
+        StartCoroutine(AnimateColorChange(1f));
+
+        for(float i = 0f; i < 180f / speed; i++) {
+            foreach(Square square in GetSquares()) {
+                square.transform.Rotate(0, speed, 0);
+            }
+
+            yield return null;
+        }
+
+        StartCoroutine(AnimateFlipsideSquare(speed, "Alpha", false));
+        yield return new WaitForSeconds(rowDelay / speed);
+
+        for(int x = GameRules.minRow; x <= GameRules.maxRow; x++) {
+            StartCoroutine(AnimateFlipsideRow(speed, x));
+            yield return new WaitForSeconds(rowDelay / speed);
+        }
+
+        StartCoroutine(AnimateFlipsideSquare(speed, "Omega", true));
+        yield return new WaitForSeconds(rowDelay / speed);
+    }
+
+    IEnumerator AnimateColorChange(float duration) {
+        Color initial = isFlipside ? normalSkybox : flipsideSkybox;
+        Color final = isFlipside ? flipsideSkybox : normalSkybox;
+
+        float dR = (final.r - initial.r) / duration;
+        float dG = (final.g - initial.g) / duration;
+        float dB = (final.b - initial.b) / duration;
+
+        Camera.main.backgroundColor = initial;
+
+        Color c = initial;
+
+        for(float i = 0; i < duration; i += Time.deltaTime) {
+            c = new Color(c.r + dR * Time.deltaTime, c.g + dG * Time.deltaTime, c.b + dB * Time.deltaTime);
+            Camera.main.backgroundColor = c;
+
+            yield return null;
+        }
+
+        Camera.main.backgroundColor = final;
+    }
+
+    IEnumerator AnimateFlipsideSquare(float speed, string location, bool end) {
+        for(float i = 0f; i < 180f / speed; i++) {
+            GetSquare(location).transform.Rotate(speed, 0f, 0f);
+            yield return null;
+        }
+
+        if(end) {
+            finishedFlipAnimation = true;
+        }
+    }
+
+    IEnumerator AnimateFlipsideRow(float speed, int x) {
+        for(float i = 0f; i < 180f / speed; i++) {
+            for(char y = GameRules.minColumn; y <= GameRules.maxColumn; y++) {
+                GetSquare("" + y + x).transform.Rotate(speed, 0f, 0f);
+            }
+
+            yield return null;
+        }
     }
 
     void Update() {
@@ -89,20 +179,16 @@ public class GameBoard : MonoBehaviour {
     public object[] Remove(string location) {
         Square square = GetSquare(location);
 
-        if(square != null && square.piece != null) {
-            object[] data = {square.piece.GetComponent<GamePiece>().type, square.piece.GetComponent<GamePiece>().faction};
+        if(square != null && square.localPiece != null) {
+            object[] data = {square.localPiece.GetComponent<GamePiece>().type, square.localPiece.GetComponent<GamePiece>().faction};
 
-            Destroy(square.piece);
-            square.piece = null;
+            Destroy(square.localPiece);
+            square.localPiece = null;
 
             return data;
         }
 
         return new object[0];
-    }
-
-    public void Place(string location, GamePiece piece) {
-        Place(location, piece.faction, piece.type);
     }
 
     public void Place(string location, int faction, GamePiece.Type type) {
@@ -142,29 +228,29 @@ public class GameBoard : MonoBehaviour {
             gp.SetColor();
 
             piece.transform.SetParent(square.gameObject.transform);
-            piece.transform.localRotation = faction == 1 ? Quaternion.identity : Quaternion.Euler(Vector3.up * 180f);
             piece.transform.localPosition = Vector3.zero;
-
-            square.piece = piece;
+            piece.transform.localRotation = gp.GetAppropriateRotation(square.flipside);
         }
+
+        square.localPiece = piece;
     }
 
     public bool Move(string initial, string final, GamePiece piece) {
         Square square = GetSquare(final);
 
         if(square != null) {
-            GetSquare(initial).piece = null;
+            GetSquare(initial).localPiece = null;
 
-            if(square.piece != null) {
+            if(square.localPiece != null) {
                 object[] data = Remove(final);
                 Debug.Log("Faction " + data[1] + "'s " + data[0] + " was captured by faction " + piece.faction + "'s " + piece.type);
             }
 
             piece.transform.SetParent(square.gameObject.transform);
-            piece.transform.localRotation = piece.faction == 1 ? Quaternion.identity : Quaternion.Euler(Vector3.up * 180f);
+            piece.transform.localRotation = piece.GetAppropriateRotation(isFlipside);
             piece.transform.localPosition = Vector3.zero;
 
-            square.piece = piece.gameObject;
+            square.localPiece = piece.gameObject;
 
             return true;
         }
@@ -173,13 +259,41 @@ public class GameBoard : MonoBehaviour {
     }
 
     public Square GetSquare(string name) {
+        bool flipside = false;
+
+        if(name[0] == '-') {
+            name = name.Substring(1, name.Length - 1);
+            flipside = true;
+        }
+
         if(name == "Alpha" || name == "Omega") {
-            return transform.Find(name).gameObject.GetComponent<Square>();
+            Square earlySquare = transform.Find(name).gameObject.GetComponent<Square>();
+            earlySquare.flipside = flipside;
+
+            return earlySquare;
         }
 
         int startIndex = transform.Find("Alpha").GetSiblingIndex() + 1;
         int index = startIndex + (int.Parse("" + name[1]) - 1) * GameRules.maxRow + (name[0] - GameRules.minColumn);
 
-        return transform.GetChild(index).gameObject.GetComponent<Square>();
+        Square square = transform.GetChild(index).gameObject.GetComponent<Square>();
+        square.flipside = flipside;
+
+        return square;
+    }
+
+    public Square[] GetSquares() {
+        List<Square> squares = new List<Square>();
+
+        int startIndex = transform.Find("Alpha").GetSiblingIndex() + 1;
+        int endIndex = startIndex + (int.Parse("" + GameRules.maxRow) - 1) * GameRules.maxRow + (GameRules.maxColumn - GameRules.minColumn);
+
+        squares.Add(transform.GetChild(startIndex - 1).gameObject.GetComponent<Square>());
+        for(int i = startIndex; i <= endIndex; i++) {
+            squares.Add(transform.GetChild(i).gameObject.GetComponent<Square>());
+        }
+        squares.Add(transform.GetChild(endIndex + 1).gameObject.GetComponent<Square>());
+
+        return squares.ToArray();
     }
 }

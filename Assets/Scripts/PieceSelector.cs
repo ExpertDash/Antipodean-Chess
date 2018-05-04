@@ -1,7 +1,13 @@
 using System;
+using System.Collections.Generic;
 ﻿using UnityEngine;
 
 public class PieceSelector : MonoBehaviour {
+	public string user;
+	public int faction;
+
+	public TurnSystem turnSystem;
+
 	public GameBoard board;
 	public GameObject selectedSquare;
 
@@ -14,20 +20,46 @@ public class PieceSelector : MonoBehaviour {
 	public int mouseButtonRotate = 1;
 	public int mouseButtonSelect = 0;
 
-	public Color selectionSquareColor = Color.green;
+	public Color moveSquareColor = Color.green;
+	public Color attackSquareColor = Color.yellow;
+	public Color wrongSquareColor = Color.red;
 
 	public string[] possiblePaths;
+
+	void Start() {
+		GameRules.board = board;
+	}
 
 	void SetPaths(bool state) {
 		Square selectedSquare = GetSelectedSquare();
 
 		if(selectedSquare != null && selectedSquare.piece != null) {
-			possiblePaths = GameRules.GetPaths(selectedSquare.piece.GetComponent<GamePiece>(), selectedSquare.name);
+			GamePiece piece = selectedSquare.piece.GetComponent<GamePiece>();
 
-			foreach(string squareName in possiblePaths) {
+			string[] movementPaths = GameRules.GetPaths(piece, selectedSquare.name);
+			string[] attackPaths = GameRules.GetAttackPaths(piece, selectedSquare.name);
+
+			List<string> paths = new List<string>();
+
+			foreach(string squareName in movementPaths) {
 				Square square = board.GetSquare(squareName);
-				square.tile.GetComponent<Renderer>().material.color = state ? selectionSquareColor : square.tileColor;
+
+				if(square.piece == null) {
+					paths.Add(squareName);
+					square.tile.GetComponent<Renderer>().material.color = state ? moveSquareColor : square.tileColor;
+				}
 			}
+
+			foreach(string squareName in attackPaths) {
+				Square square = board.GetSquare(squareName);
+
+				if(square.piece != null && square.piece.GetComponent<GamePiece>().faction != faction) {
+					paths.Add(squareName);
+					square.tile.GetComponent<Renderer>().material.color = state ? attackSquareColor : square.tileColor;
+				}
+			}
+
+			possiblePaths = paths.ToArray();
 		}
 	}
 
@@ -47,18 +79,29 @@ public class PieceSelector : MonoBehaviour {
 		GameObject square = tile.transform.parent.gameObject;
 
 		if(GetSelectedSquare() != null && GetSelectedSquare().piece != null && Array.Exists(possiblePaths, name => name == square.name)) {
-			board.Place(square.name, GetSelectedSquare().piece.GetComponent<GamePiece>());
-			board.Remove(GetSelectedSquare().name);
+			board.Move(GetSelectedSquare().name, square.name, GetSelectedSquare().piece.GetComponent<GamePiece>());
 			selectedSquare = null;
+
+			turnSystem.NextTurn();
 		} else {
-			tile.GetComponent<Renderer>().material.color = selectionSquareColor;
-			selectedSquare = square;
-			SetPaths(true);
+			Square actualSquare = board.GetSquare(square.name);
+
+			if(GetSelectedSquare() != null && actualSquare.name == GetSelectedSquare().name) {
+				SetPaths(false);
+				selectedSquare.transform.GetChild(0).gameObject.GetComponent<Renderer>().material.color = GetSelectedSquare().tileColor;
+				selectedSquare = null;
+			} else if(actualSquare.piece != null && actualSquare.piece.GetComponent<GamePiece>().faction == faction) {
+				tile.GetComponent<Renderer>().material.color = moveSquareColor;
+				selectedSquare = square;
+				SetPaths(true);
+			} else {
+				selectedSquare = null;
+			}
 		}
 	}
 
-	void Update() {
-		if(Input.GetMouseButtonDown(mouseButtonSelect)) {
+	void OnSelectPress() {
+		if(turnSystem.IsTurn(user)) {
 			if(selectedSquare != null) {
 				SetPaths(false);
 				selectedSquare.transform.GetChild(0).gameObject.GetComponent<Renderer>().material.color = GetSelectedSquare().tileColor;
@@ -67,27 +110,29 @@ public class PieceSelector : MonoBehaviour {
 			RaycastHit hit;
 			if(Physics.Raycast(Camera.main.ScreenPointToRay(Input.mousePosition), out hit)) {
 				OnSquareSelected(hit);
-		   } else {
-			   selectedSquare = null;
-		   }
-	   }
-
-		if(Input.GetMouseButtonDown(mouseButtonRotate)) {
-			Cursor.lockState = CursorLockMode.Locked;
-			Cursor.visible = false;
+			} else {
+				selectedSquare = null;
+			}
 		}
+	}
 
-		if(Input.GetMouseButtonUp(mouseButtonRotate)) {
-			Cursor.lockState = CursorLockMode.None;
-			Cursor.visible = true;
-		}
+	void ToggleRotation(bool state) {
+		Cursor.lockState = state ? CursorLockMode.Locked : CursorLockMode.None;
+		Cursor.visible = !state;
+	}
 
-		if(Input.GetMouseButton(mouseButtonRotate)) {
-			Vector2 move = new Vector2(Input.GetAxis("Mouse Y"), Input.GetAxis("Mouse X")) * rotationSpeed * Time.deltaTime;
+	void ExecuteRotation() {
+		Vector2 move = new Vector2(Input.GetAxis("Mouse Y"), Input.GetAxis("Mouse X")) * rotationSpeed * Time.deltaTime;
 
-			transform.RotateAround(board.transform.position, transform.up, move.y);
-			transform.RotateAround(board.transform.position, -transform.right, move.x);
-		}
+		transform.RotateAround(board.transform.position, transform.up, move.y);
+		transform.RotateAround(board.transform.position, -transform.right, move.x);
+	}
+
+	void Update() {
+		if(Input.GetMouseButtonDown(mouseButtonSelect)) OnSelectPress();
+		if(Input.GetMouseButtonDown(mouseButtonRotate)) ToggleRotation(true);
+		if(Input.GetMouseButtonUp(mouseButtonRotate)) ToggleRotation(false);
+		if(Input.GetMouseButton(mouseButtonRotate)) ExecuteRotation();
 
 		if(Input.mouseScrollDelta.y != 0) {
 			if(Input.mouseScrollDelta.y > 0 && Vector3.Distance(transform.position, board.transform.position) <= minDistanceFromCenter) {

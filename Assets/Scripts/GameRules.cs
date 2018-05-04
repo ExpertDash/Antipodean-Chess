@@ -9,6 +9,8 @@ public class GameRules {
 	public static char minColumn = 'A', maxColumn = 'H';
 	public static int minRow = 1, maxRow = 8;
 
+	public static GameBoard board {get; set;}
+
 	public static char GetColumn(char letter, int distance) {
 		char place = (char)(letter + distance);
 
@@ -90,7 +92,13 @@ public class GameRules {
 		List<string> squares = new List<string>();
 
 		for(int i = 0; i < distance; i++) {
-			squares.AddRange(GetSquareAt(square, direction, 1 + i));
+			string[] next = GetSquareAt(square, direction, 1 + i);
+
+			squares.AddRange(next);
+
+			if(board != null && next.Length == 1 && board.GetSquare(next[0]).piece != null) {
+				break;
+			}
 		}
 
 		return squares.ToArray();

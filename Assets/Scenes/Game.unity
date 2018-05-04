@@ -152,7 +152,7 @@ Light:
   serializedVersion: 8
   m_Type: 0
   m_Color: {r: 1, g: 1, b: 1, a: 1}
-  m_Intensity: 10
+  m_Intensity: 6.5
   m_Range: 10
   m_SpotAngle: 120
   m_CookieSize: 10
@@ -188,6 +188,7 @@ GameObject:
   - component: {fileID: 101067410}
   - component: {fileID: 101067411}
   - component: {fileID: 101067412}
+  - component: {fileID: 101067413}
   m_Layer: 0
   m_Name: Board
   m_TagString: Untagged
@@ -206,7 +207,7 @@ Transform:
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_Children: []
   m_Father: {fileID: 0}
-  m_RootOrder: 2
+  m_RootOrder: 3
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!114 &101067411
 MonoBehaviour:
@@ -261,12 +262,127 @@ MonoBehaviour:
   queenPrefab: {fileID: 1374591332135294, guid: 80908bc100c8b7548ad5e56677ad10df,
     type: 2}
   kingPrefab: {fileID: 1412742195942642, guid: c8f37ec6f47c6714e950ac3ad8513fa6, type: 2}
+  boardLayout: {fileID: 101067413}
   factions: 2
   nameContainer: {fileID: 0}
   showSquareNames: 1
   nameHeightOffset: 1.25
   squareNameColor: {r: 0, g: 0, b: 1, a: 0.391}
   squareMaterial: {fileID: 2100000, guid: 72b82c64401752b4996d34db8efdc026, type: 2}
+--- !u!114 &101067413
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_PrefabParentObject: {fileID: 0}
+  m_PrefabInternal: {fileID: 0}
+  m_GameObject: {fileID: 101067409}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: b8c8b6f6c443f51488a670f0ece24d63, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  placements:
+  - square: Alpha
+    faction: 1
+    piece: 5
+  - square: A1
+    faction: 1
+    piece: 3
+  - square: B1
+    faction: 1
+    piece: 1
+  - square: C1
+    faction: 1
+    piece: 1
+  - square: D1
+    faction: 1
+    piece: 3
+  - square: E1
+    faction: 1
+    piece: 2
+  - square: F1
+    faction: 1
+    piece: 1
+  - square: G1
+    faction: 1
+    piece: 1
+  - square: H1
+    faction: 1
+    piece: 2
+  - square: A2
+    faction: 1
+    piece: 0
+  - square: B2
+    faction: 1
+    piece: 0
+  - square: C2
+    faction: 1
+    piece: 0
+  - square: D2
+    faction: 1
+    piece: 0
+  - square: E2
+    faction: 1
+    piece: 0
+  - square: F2
+    faction: 1
+    piece: 0
+  - square: G2
+    faction: 1
+    piece: 0
+  - square: H2
+    faction: 1
+    piece: 0
+  - square: Omega
+    faction: 2
+    piece: 5
+  - square: A8
+    faction: 2
+    piece: 3
+  - square: B8
+    faction: 2
+    piece: 1
+  - square: C8
+    faction: 2
+    piece: 1
+  - square: D8
+    faction: 2
+    piece: 3
+  - square: E8
+    faction: 2
+    piece: 2
+  - square: F8
+    faction: 2
+    piece: 1
+  - square: G8
+    faction: 2
+    piece: 1
+  - square: H8
+    faction: 2
+    piece: 2
+  - square: A7
+    faction: 2
+    piece: 0
+  - square: B7
+    faction: 2
+    piece: 0
+  - square: C7
+    faction: 2
+    piece: 0
+  - square: D7
+    faction: 2
+    piece: 0
+  - square: E7
+    faction: 2
+    piece: 0
+  - square: F7
+    faction: 2
+    piece: 0
+  - square: G7
+    faction: 2
+    piece: 0
+  - square: H7
+    faction: 2
+    piece: 0
 --- !u!1 &405693838
 GameObject:
   m_ObjectHideFlags: 0
@@ -275,8 +391,8 @@ GameObject:
   serializedVersion: 5
   m_Component:
   - component: {fileID: 405693842}
-  - component: {fileID: 405693841}
   - component: {fileID: 405693843}
+  - component: {fileID: 405693841}
   - component: {fileID: 405693840}
   - component: {fileID: 405693839}
   m_Layer: 0
@@ -347,7 +463,7 @@ Transform:
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_Children: []
   m_Father: {fileID: 0}
-  m_RootOrder: 0
+  m_RootOrder: 1
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!114 &405693843
 MonoBehaviour:
@@ -360,6 +476,9 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 6480a814b4fdbee4c827e4883dcc8860, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  user: Player1
+  faction: 1
+  turnSystem: {fileID: 1039439176}
   board: {fileID: 101067412}
   selectedSquare: {fileID: 0}
   rotationSpeed: 100
@@ -368,7 +487,9 @@ MonoBehaviour:
   maxDistanceFromCenter: 20
   mouseButtonRotate: 1
   mouseButtonSelect: 0
-  selectionSquareColor: {r: 0, g: 1, b: 0, a: 1}
+  moveSquareColor: {r: 0, g: 1, b: 0, a: 1}
+  attackSquareColor: {r: 1, g: 0.92156863, b: 0.015686275, a: 1}
+  wrongSquareColor: {r: 1, g: 0, b: 0, a: 1}
   possiblePaths: []
 --- !u!1 &414519575
 GameObject:
@@ -409,7 +530,7 @@ Light:
   serializedVersion: 8
   m_Type: 0
   m_Color: {r: 1, g: 1, b: 1, a: 1}
-  m_Intensity: 10
+  m_Intensity: 6.5
   m_Range: 10
   m_SpotAngle: 120
   m_CookieSize: 10
@@ -469,7 +590,7 @@ Transform:
   - {fileID: 414519576}
   - {fileID: 613611745}
   m_Father: {fileID: 0}
-  m_RootOrder: 1
+  m_RootOrder: 2
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!114 &555590319
 MonoBehaviour:
@@ -522,7 +643,7 @@ Light:
   serializedVersion: 8
   m_Type: 0
   m_Color: {r: 1, g: 1, b: 1, a: 1}
-  m_Intensity: 10
+  m_Intensity: 6.5
   m_Range: 10
   m_SpotAngle: 120
   m_CookieSize: 10
@@ -613,6 +734,50 @@ Light:
   m_UseColorTemperature: 0
   m_ShadowRadius: 0
   m_ShadowAngle: 0
+--- !u!1 &1039439174
+GameObject:
+  m_ObjectHideFlags: 0
+  m_PrefabParentObject: {fileID: 0}
+  m_PrefabInternal: {fileID: 0}
+  serializedVersion: 5
+  m_Component:
+  - component: {fileID: 1039439175}
+  - component: {fileID: 1039439176}
+  m_Layer: 0
+  m_Name: TurnSystem
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &1039439175
+Transform:
+  m_ObjectHideFlags: 0
+  m_PrefabParentObject: {fileID: 0}
+  m_PrefabInternal: {fileID: 0}
+  m_GameObject: {fileID: 1039439174}
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_Children: []
+  m_Father: {fileID: 0}
+  m_RootOrder: 0
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &1039439176
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_PrefabParentObject: {fileID: 0}
+  m_PrefabInternal: {fileID: 0}
+  m_GameObject: {fileID: 1039439174}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: f9afa405e38aa9f42b9e73f54865d310, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  users:
+  - Player1
+  userThisTurn: 
+  currentTurn: 0
 --- !u!1 &1293482758
 GameObject:
   m_ObjectHideFlags: 0
@@ -652,7 +817,7 @@ Light:
   serializedVersion: 8
   m_Type: 0
   m_Color: {r: 1, g: 1, b: 1, a: 1}
-  m_Intensity: 10
+  m_Intensity: 6.5
   m_Range: 10
   m_SpotAngle: 120
   m_CookieSize: 10
@@ -717,7 +882,7 @@ Light:
   serializedVersion: 8
   m_Type: 0
   m_Color: {r: 1, g: 1, b: 1, a: 1}
-  m_Intensity: 10
+  m_Intensity: 6.5
   m_Range: 10
   m_SpotAngle: 120
   m_CookieSize: 10
@@ -782,7 +947,7 @@ Light:
   serializedVersion: 8
   m_Type: 0
   m_Color: {r: 1, g: 1, b: 1, a: 1}
-  m_Intensity: 10
+  m_Intensity: 6.5
   m_Range: 10
   m_SpotAngle: 120
   m_CookieSize: 10

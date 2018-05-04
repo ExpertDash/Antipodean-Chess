@@ -5,6 +5,8 @@ using System.Collections.Generic;
 public class GameBoard : MonoBehaviour {
     public GameObject pawnPrefab, knightPrefab, bishopPrefab, rookPrefab, queenPrefab, kingPrefab;
 
+    public BoardLayout boardLayout;
+
     public int factions;
     public List<GamePiece>[] factionJails;
 
@@ -13,53 +15,12 @@ public class GameBoard : MonoBehaviour {
     public bool showSquareNames = true;
     public float nameHeightOffset = 1f;
     public Color squareNameColor = Color.blue;
-
     public Material squareMaterial;
 
     void SetupPieces() {
-        Place("Alpha", 1, GamePiece.Type.KING);
-        Place("A1", 1, GamePiece.Type.ROOK);
-        Place("B1", 1, GamePiece.Type.KNIGHT);
-        Place("C1", 1, GamePiece.Type.KNIGHT);
-        Place("D1", 1, GamePiece.Type.ROOK);
-        Place("E1", 1, GamePiece.Type.BISHOP);
-        Place("F1", 1, GamePiece.Type.KNIGHT);
-        Place("G1", 1, GamePiece.Type.KNIGHT);
-        Place("H1", 1, GamePiece.Type.BISHOP);
-
-        Place("A2", 1, GamePiece.Type.PAWN);
-        Place("B2", 1, GamePiece.Type.PAWN);
-        Place("C2", 1, GamePiece.Type.PAWN);
-        Place("D2", 1, GamePiece.Type.PAWN);
-        Place("E2", 1, GamePiece.Type.PAWN);
-        Place("F2", 1, GamePiece.Type.PAWN);
-        Place("G2", 1, GamePiece.Type.PAWN);
-        Place("H2", 1, GamePiece.Type.PAWN);
-
-        Place("Omega", 2, GamePiece.Type.KING);
-        Place("A8", 2, GamePiece.Type.ROOK);
-        Place("B8", 2, GamePiece.Type.KNIGHT);
-        Place("C8", 2, GamePiece.Type.KNIGHT);
-        Place("D8", 2, GamePiece.Type.ROOK);
-        Place("E8", 2, GamePiece.Type.BISHOP);
-        Place("F8", 2, GamePiece.Type.KNIGHT);
-        Place("G8", 2, GamePiece.Type.KNIGHT);
-        Place("H8", 2, GamePiece.Type.BISHOP);
-
-        Place("A7", 2, GamePiece.Type.PAWN);
-        Place("B7", 2, GamePiece.Type.PAWN);
-        Place("C7", 2, GamePiece.Type.PAWN);
-        Place("D7", 2, GamePiece.Type.PAWN);
-        Place("E7", 2, GamePiece.Type.PAWN);
-        Place("F7", 2, GamePiece.Type.PAWN);
-        Place("G7", 2, GamePiece.Type.PAWN);
-        Place("H7", 2, GamePiece.Type.PAWN);
-
-
-        /*
-        object[] data = Remove("Alpha");
-        Debug.Log(data[0] + "_" + data[1]);
-        */
+        foreach(BoardLayout.Placement place in boardLayout.placements) {
+            Place(place.square, place.faction, place.piece);
+        }
     }
 
     public void Create() {
@@ -186,6 +147,29 @@ public class GameBoard : MonoBehaviour {
 
             square.piece = piece;
         }
+    }
+
+    public bool Move(string initial, string final, GamePiece piece) {
+        Square square = GetSquare(final);
+
+        if(square != null) {
+            GetSquare(initial).piece = null;
+
+            if(square.piece != null) {
+                object[] data = Remove(final);
+                Debug.Log("Faction " + data[1] + "'s " + data[0] + " was captured by faction " + piece.faction + "'s " + piece.type);
+            }
+
+            piece.transform.SetParent(square.gameObject.transform);
+            piece.transform.localRotation = piece.faction == 1 ? Quaternion.identity : Quaternion.Euler(Vector3.up * 180f);
+            piece.transform.localPosition = Vector3.zero;
+
+            square.piece = piece.gameObject;
+
+            return true;
+        }
+
+        return false;
     }
 
     public Square GetSquare(string name) {

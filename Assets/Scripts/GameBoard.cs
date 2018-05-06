@@ -49,11 +49,9 @@ public class GameBoard : MonoBehaviour {
 			factionJails[i] = new List<GamePiece>();
 		}
 
-        if(showSquareNames) {
-            nameContainer = new GameObject();
-            nameContainer.name = "Names";
-            nameContainer.transform.parent = null;
-        }
+        nameContainer = new GameObject();
+        nameContainer.name = "Names";
+        nameContainer.transform.parent = null;
 
         for(int i = 0; i < boardGen.gameObject.transform.childCount; i++) {
             Square square = boardGen.transform.GetChild(i).gameObject.AddComponent<Square>();
@@ -63,31 +61,27 @@ public class GameBoard : MonoBehaviour {
             square.tile.GetComponent<Renderer>().material = squareMaterial;
             square.tile.GetComponent<Renderer>().material.color = square.tileColor;
 
-            if(showSquareNames) {
-                GameObject nameRender = new GameObject();
-                nameRender.transform.localScale = Vector3.one;
-                nameRender.transform.position = square.gameObject.transform.position + square.gameObject.transform.up * nameHeightOffset;
-                nameRender.transform.localRotation = Quaternion.identity;
+            GameObject nameRender = new GameObject();
+            nameRender.transform.localScale = Vector3.one;
+            nameRender.transform.position = square.gameObject.transform.position + square.gameObject.transform.up * nameHeightOffset;
+            nameRender.transform.localRotation = Quaternion.identity;
 
-                TextMesh textMesh = nameRender.AddComponent<TextMesh>();
-                textMesh.text = square.gameObject.name;
-                textMesh.characterSize = 0.01f;
-                textMesh.fontSize = 350;
-                textMesh.anchor = TextAnchor.MiddleCenter;
+            TextMesh textMesh = nameRender.AddComponent<TextMesh>();
+            textMesh.text = square.gameObject.name;
+            textMesh.characterSize = 0.01f;
+            textMesh.fontSize = 350;
+            textMesh.anchor = TextAnchor.MiddleCenter;
 
-                nameRender.GetComponent<Renderer>().material.shader = Shader.Find("GUI/3D Text");
-                nameRender.GetComponent<Renderer>().material.color = squareNameColor;
+            nameRender.GetComponent<Renderer>().material.shader = Shader.Find("GUI/3D Text");
+            nameRender.GetComponent<Renderer>().material.color = squareNameColor;
 
-                nameRender.name = "Name for " + square.gameObject.name;
-                nameRender.transform.parent = nameContainer.transform;
-            }
+            nameRender.name = "Name for " + square.gameObject.name;
+            nameRender.transform.parent = nameContainer.transform;
         }
 
-        if(showSquareNames) {
-            nameContainer.transform.parent = transform;
-            nameContainer.transform.localPosition = Vector3.zero;
-            nameContainer.transform.localRotation = Quaternion.identity;
-        }
+        nameContainer.transform.parent = transform;
+        nameContainer.transform.localPosition = Vector3.zero;
+        nameContainer.transform.localRotation = Quaternion.identity;
 
         SetupPieces();
 
@@ -168,8 +162,16 @@ public class GameBoard : MonoBehaviour {
         }
     }
 
+    public void ToggleSquareNames(bool state) {
+        showSquareNames = state;
+
+        for(int i = 0; i < nameContainer.transform.childCount; i++) {
+            nameContainer.transform.GetChild(i).gameObject.SetActive(showSquareNames);
+        }
+    }
+
     void Update() {
-        if(showSquareNames) {
+        if(showSquareNames && nameContainer) {
             for(int i = 0; i < nameContainer.transform.childCount; i++) {
                 nameContainer.transform.GetChild(i).transform.rotation = Quaternion.LookRotation(-Camera.main.transform.position, Camera.main.transform.up);
             }
@@ -189,6 +191,21 @@ public class GameBoard : MonoBehaviour {
         }
 
         return new object[0];
+    }
+
+    public void Capture(string location, GamePiece attacker) {
+        Square square = GetSquare(location);
+        GameObject piece = square.localPiece;
+        GamePiece gp = piece.GetComponent<GamePiece>();
+
+        factionJails[attacker.faction].Add(gp);
+        square.localPiece = null;
+
+        Debug.Log("Faction " + gp.faction + "'s " + gp.type + " was captured by faction " + attacker.faction + "'s " + attacker.type);
+
+        piece.transform.parent = null;
+        piece.transform.position = Vector3.right * 10f;
+        piece.transform.localRotation = Quaternion.identity;
     }
 
     public void Place(string location, int faction, GamePiece.Type type) {
@@ -242,8 +259,7 @@ public class GameBoard : MonoBehaviour {
             GetSquare(initial).localPiece = null;
 
             if(square.localPiece != null) {
-                object[] data = Remove(final);
-                Debug.Log("Faction " + data[1] + "'s " + data[0] + " was captured by faction " + piece.faction + "'s " + piece.type);
+                Capture(final, piece);
             }
 
             piece.transform.SetParent(square.gameObject.transform);

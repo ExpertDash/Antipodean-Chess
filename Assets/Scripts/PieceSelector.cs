@@ -21,6 +21,7 @@ public class PieceSelector : MonoBehaviour {
 	public int mouseButtonSelect = 0;
 
 	public KeyCode flipButton = KeyCode.F;
+	public KeyCode toggleNamesButton = KeyCode.N;
 
 	public Color moveSquareColor = Color.green;
 	public Color attackSquareColor = Color.yellow;
@@ -137,6 +138,7 @@ public class PieceSelector : MonoBehaviour {
 		if(Input.GetMouseButton(mouseButtonRotate)) ExecuteRotation();
 
 		if(Input.GetKeyUp(flipButton)) board.Flipside();
+		if(Input.GetKeyDown(toggleNamesButton)) board.ToggleSquareNames(!board.showSquareNames);
 
 		if(Input.mouseScrollDelta.y != 0) {
 			if(Input.mouseScrollDelta.y > 0 && Vector3.Distance(transform.position, board.transform.position) <= minDistanceFromCenter) {

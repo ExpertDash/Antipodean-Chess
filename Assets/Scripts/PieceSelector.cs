@@ -137,7 +137,7 @@ public class PieceSelector : MonoBehaviour {
 		if(Input.GetMouseButtonUp(mouseButtonRotate)) ToggleRotation(false);
 		if(Input.GetMouseButton(mouseButtonRotate)) ExecuteRotation();
 
-		if(Input.GetKeyUp(flipButton)) board.Flipside();
+		if(Input.GetKeyUp(flipButton) && GetSelectedSquare() == null) board.Flipside();
 		if(Input.GetKeyDown(toggleNamesButton)) board.ToggleSquareNames(!board.showSquareNames);
 
 		if(Input.mouseScrollDelta.y != 0) {

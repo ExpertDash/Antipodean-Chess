@@ -83,6 +83,8 @@ public class GameBoard : MonoBehaviour {
         nameContainer.transform.localPosition = Vector3.zero;
         nameContainer.transform.localRotation = Quaternion.identity;
 
+        ToggleSquareNames(showSquareNames);
+
         SetupPieces();
 
         finishedFlipAnimation = true;
@@ -203,9 +205,32 @@ public class GameBoard : MonoBehaviour {
 
         Debug.Log("Faction " + gp.faction + "'s " + gp.type + " was captured by faction " + attacker.faction + "'s " + attacker.type);
 
+        /*
         piece.transform.parent = null;
-        piece.transform.position = Vector3.right * 10f;
+        piece.transform.position = Vector3.up * 20f;
         piece.transform.localRotation = Quaternion.identity;
+        */
+
+        StartCoroutine(CaptureAnimation(gp));
+    }
+
+    IEnumerator CaptureAnimation(GamePiece piece) {
+        float speed = 0.5f;
+        float dist = 0f;
+        float dest = 2f;
+
+        while(piece.pieceColor.a > 0) {
+            piece.gameObject.transform.position += piece.gameObject.transform.up * speed;
+
+            dist += speed;
+            speed *= 0.85f;
+
+            piece.pieceColor = new Color(piece.pieceColor.r, piece.pieceColor.g, piece.pieceColor.b, (dest - dist) / dest);
+            
+            yield return null;
+        }
+
+        Destroy(piece.gameObject);
     }
 
     public void Place(string location, int faction, GamePiece.Type type) {
@@ -242,7 +267,7 @@ public class GameBoard : MonoBehaviour {
             gp.type = type;
             gp.faction = faction;
             gp.direction = faction == 1 ? GamePiece.Direction.DOWN : GamePiece.Direction.UP;
-            gp.SetColor();
+            gp.SetColor(boardLayout);
 
             piece.transform.SetParent(square.gameObject.transform);
             piece.transform.localPosition = Vector3.zero;

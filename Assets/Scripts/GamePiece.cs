@@ -22,19 +22,33 @@ public class GamePiece : MonoBehaviour {
     //0 none, 1 white, 2 black
     public int faction = 0;
 
-    public void SetColor() {
+    public void SetColor(BoardLayout layout = null) {
         Color color = Color.magenta;
 
-		switch(faction) {
-			case 1:
-				color = Color.white;
-				break;
-			case 2:
-				color = Color.black;
-				break;
-		}
+        if(layout) {
+            color = layout.GetFactionColor(faction);
+        } else {
+    		switch(faction) {
+    			case 1:
+    				color = Color.white;
+    				break;
+    			case 2:
+    				color = Color.black;
+    				break;
+    		}
+        }
 
-		gameObject.transform.GetChild(0).GetChild(0).gameObject.GetComponent<Renderer>().material.color = color;
+		pieceColor = color;
+    }
+
+    public Color pieceColor {
+        set {
+            gameObject.transform.GetChild(0).GetChild(0).gameObject.GetComponent<Renderer>().material.color = value;
+        }
+
+        get {
+            return gameObject.transform.GetChild(0).GetChild(0).gameObject.GetComponent<Renderer>().material.color;
+        }
     }
 
     public string GetSquare() {

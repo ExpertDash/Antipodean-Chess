@@ -9,8 +9,37 @@ public class BoardLayout : MonoBehaviour {
         public GamePiece.Type piece;
     }
 
+    [System.SerializableAttribute]
+    public struct FactionColor {
+        public int faction;
+        public Color color;
+    }
+
     public bool useDefaultLayout;
+
+    public FactionColor[] factionColors = {
+        new FactionColor() {
+            faction = 1,
+            color = Color.white
+        },
+
+        new FactionColor() {
+            faction = 2,
+            color = Color.black
+        }
+    };
+
     public Placement[] placements;
+
+    public Color GetFactionColor(int faction) {
+        foreach(FactionColor fc in factionColors) {
+            if(fc.faction == faction) {
+                return fc.color;
+            }
+        }
+
+        return Color.magenta;
+    }
 
     public void EnactDefaultLayout(Action<string, int, GamePiece.Type> Place) {
         Place("Alpha", 1, GamePiece.Type.KING);

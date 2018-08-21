@@ -60,6 +60,6 @@ public class GamePiece : MonoBehaviour {
     }
 
     public Quaternion GetAppropriateRotation(bool flipside) {
-        return Quaternion.Euler(flipside ? new Vector3(180f, faction == 1 ? 180f : 0f, 0f) : new Vector3(0, faction == 1 ? 0 : 180f, 0f));
+        return Quaternion.Euler(flipside ? new Vector3(180f, faction % 2 == 0 ? 180f : 0f, 0f) : new Vector3(0, faction % 2 == 0 ? 0 : 180f, 0f));
     }
 }

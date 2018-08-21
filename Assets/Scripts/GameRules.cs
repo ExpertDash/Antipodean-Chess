@@ -1,5 +1,6 @@
 using System.Collections.Generic;
 using System.Linq;
+using UnityEngine;
 
 public class GameRules {
 	public static readonly int MAX_DISTANCE = 10;
@@ -10,6 +11,10 @@ public class GameRules {
 	public static int minRow = 1, maxRow = 8;
 
 	public static GameBoard board {get; set;}
+
+	public static bool IsOmniSquare(string square) {
+		return square.EndsWith("Alpha") || square.EndsWith("Omega");
+	}
 
 	public static char GetColumn(char letter, int distance) {
 		char place = (char)(letter + distance);
@@ -91,13 +96,31 @@ public class GameRules {
 	public static string[] GetSquaresBetween(string square, GamePiece.Direction direction, int distance) {
 		List<string> squares = new List<string>();
 
-		for(int i = 0; i < distance; i++) {
-			string[] next = GetSquareAt(square, direction, 1 + i);
+		if(distance > 0) {
+			if(IsOmniSquare(square)) {
+				string[] next = GetSquareAt(square, direction, 1);
 
-			squares.AddRange(next);
+				if(distance > 1) {
+					foreach(string s in next) {
+						if(board && board.GetSquare(s).GetSurfacePiece(board) == null) {
+							string[] nearby = GetSquaresBetween(s, direction, 1);
 
-			if(board != null && next.Length == 1 && board.GetSquare(next[0]).piece != null) {
-				break;
+							if(!nearby.Contains(square)) {
+								squares.Add(s);
+								squares.AddRange(GetSquaresBetween(s, direction, distance - 1));
+							}
+						}
+					}
+				}
+			} else {
+				for(int i = 0; i < distance; i++) {
+					string[] next = GetSquareAt(square, direction, 1 + i);
+					squares.AddRange(next);
+
+					if(board != null && next.Length == 1 && board.GetSquare(next[0]).GetSurfacePiece(board)) {
+						break;		
+					}
+				}
 			}
 		}
 

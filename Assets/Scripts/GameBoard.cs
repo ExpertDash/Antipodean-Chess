@@ -1,6 +1,7 @@
 using UnityEngine;
 using System.Collections;
 using System.Collections.Generic;
+using System.Linq;
 
 [RequireComponent(typeof(BoardGen))]
 public class GameBoard : MonoBehaviour {
@@ -14,11 +15,11 @@ public class GameBoard : MonoBehaviour {
     }
 
     public bool isFlipside;
-    private bool finishedFlipAnimation;
+    [HideInInspector] public bool finishedFlipAnimation;
     public Color normalSkybox = Color.gray, flipsideSkybox = Color.black;
 
     public int factions;
-    public List<GamePiece>[] factionJails;
+    public Jail jail;//public List<GamePiece>[] factionJails;
 
     [HideInInspector]
     public GameObject nameContainer;
@@ -43,12 +44,12 @@ public class GameBoard : MonoBehaviour {
 
         GameRules.maxRow = GameRules.minRow + boardGen.pitchSteps - 1;
         GameRules.maxColumn = (char)(GameRules.minColumn + boardGen.yawSteps - 1);
-
+/*
         factionJails = new List<GamePiece>[factions];
         for(int i = 0; i < factions; i++) {
 			factionJails[i] = new List<GamePiece>();
 		}
-
+*/
         nameContainer = new GameObject();
         nameContainer.name = "Names";
         nameContainer.transform.parent = null;
@@ -164,6 +165,36 @@ public class GameBoard : MonoBehaviour {
         }
     }
 
+    IEnumerator SwapAnimate(float speed, string location) {
+        finishedFlipAnimation = false;
+
+        Square square =  GetSquare(location);
+        Quaternion rot = square.transform.localRotation;
+
+         for(float i = 0f; i < 180f / speed; i++) {
+            square.transform.Rotate(0, speed, 0);
+            yield return null;
+        }
+
+        for(float i = 0f; i < 180f / speed; i++) {
+            square.transform.Rotate(speed, 0f, 0f);
+            yield return null;
+        }
+
+        square.transform.localRotation = rot;
+
+        GameObject p = GetSquare(location).piece;
+        GameObject ap = GetSquare(location).antiPiece;
+        
+        Remove(location);
+        Remove("-" + location);
+
+        if(ap) Place(location, ap.GetComponent<GamePiece>().faction, ap.GetComponent<GamePiece>().type);
+        if(p) Place("-" + location, p.GetComponent<GamePiece>().faction, p.GetComponent<GamePiece>().type);
+
+        finishedFlipAnimation = true;
+    }
+
     public void ToggleSquareNames(bool state) {
         showSquareNames = state;
 
@@ -195,12 +226,12 @@ public class GameBoard : MonoBehaviour {
         return new object[0];
     }
 
-    public void Capture(string location, GamePiece attacker) {
+    public GamePiece Capture(string location, GamePiece attacker) {
         Square square = GetSquare(location);
         GameObject piece = square.localPiece;
         GamePiece gp = piece.GetComponent<GamePiece>();
 
-        factionJails[attacker.faction].Add(gp);
+        //factionJails[attacker.faction].Add(gp);
         square.localPiece = null;
 
         Debug.Log("Faction " + gp.faction + "'s " + gp.type + " was captured by faction " + attacker.faction + "'s " + attacker.type);
@@ -212,12 +243,16 @@ public class GameBoard : MonoBehaviour {
         */
 
         StartCoroutine(CaptureAnimation(gp));
+
+        return gp;
     }
 
     IEnumerator CaptureAnimation(GamePiece piece) {
         float speed = 0.5f;
         float dist = 0f;
         float dest = 2f;
+
+        Color c = piece.pieceColor;
 
         while(piece.pieceColor.a > 0) {
             piece.gameObject.transform.position += piece.gameObject.transform.up * speed;
@@ -230,7 +265,14 @@ public class GameBoard : MonoBehaviour {
             yield return null;
         }
 
-        Destroy(piece.gameObject);
+        piece.pieceColor = c;//Destroy(piece.gameObject);
+        jail.Add(piece);
+    }
+
+    public void Swap(string location) {
+        if(finishedFlipAnimation) {
+            StartCoroutine(SwapAnimate(10f, location));
+        }
     }
 
     public void Place(string location, int faction, GamePiece.Type type) {
@@ -266,7 +308,7 @@ public class GameBoard : MonoBehaviour {
             GamePiece gp = piece.AddComponent<GamePiece>();
             gp.type = type;
             gp.faction = faction;
-            gp.direction = faction == 1 ? GamePiece.Direction.DOWN : GamePiece.Direction.UP;
+            gp.direction = faction % 2 == 0 ? GamePiece.Direction.DOWN : GamePiece.Direction.UP;
             gp.SetColor(boardLayout);
 
             piece.transform.SetParent(square.gameObject.transform);
@@ -277,14 +319,15 @@ public class GameBoard : MonoBehaviour {
         square.localPiece = piece;
     }
 
-    public bool Move(string initial, string final, GamePiece piece) {
+    public GamePiece Move(string initial, string final, GamePiece piece) {
+        GamePiece captured = null;
         Square square = GetSquare(final);
 
         if(square != null) {
-            GetSquare(initial).localPiece = null;
+            if(initial.Length > 0) GetSquare(initial).localPiece = null;
 
             if(square.localPiece != null) {
-                Capture(final, piece);
+                captured = Capture(final, piece);
             }
 
             piece.transform.SetParent(square.gameObject.transform);
@@ -293,10 +336,10 @@ public class GameBoard : MonoBehaviour {
 
             square.localPiece = piece.gameObject;
 
-            return true;
+            //return true;
         }
 
-        return false;
+        return captured; //return false;
     }
 
     public Square GetSquare(string name) {
@@ -336,5 +379,20 @@ public class GameBoard : MonoBehaviour {
         squares.Add(transform.GetChild(endIndex + 1).gameObject.GetComponent<Square>());
 
         return squares.ToArray();
+    }
+
+    public string[] GetSquares(GamePiece.Type type) {
+        List<string> squares = new List<string>();
+
+        foreach(Square square in GetSquares()) {
+            if(square.piece && square.piece.GetComponent<GamePiece>().type == type) squares.Add(square.name);
+            if(square.antiPiece && square.antiPiece.GetComponent<GamePiece>().type == type) squares.Add("-" + square.name);
+        }
+
+        return squares.ToArray();
+    }
+
+    public string[] GetSquares(GamePiece.Type type, int faction) {
+        return GetSquares(type).Where(s => GetSquare(s).localPiece.GetComponent<GamePiece>().faction == faction).ToArray();
     }
 }

@@ -108,9 +108,14 @@ public class PieceSelector : MonoBehaviour {
 			board.GetSquare(final).transform.GetChild(0).gameObject.GetComponent<Renderer>().material.color = checkSquareColor;
 			
 			if(piece) {
-				board.Move("", initial, piece);
-				board.jail.Remove(captured);
-				if(captured) board.Move("", final, captured);
+				SetPaths(false);
+
+				board.Move(final, initial, piece);
+
+				if(captured) {
+					board.jail.Remove(captured);
+					board.Move("", final, captured);
+				}
 			} else {
 				while(!board.finishedFlipAnimation) board.Swap(GetSelectedSquare().name);
 			}

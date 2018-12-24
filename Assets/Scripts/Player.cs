@@ -39,8 +39,15 @@ public class Player : MonoBehaviour {
 		public Dropdown dropdownStyle;
 	}
 
-	public Team team;
+	public bool isSingleplayer = false;
+	public Team _team;
 	public Jail jail;
+
+	public Team team {
+		get {
+			return (isSingleplayer && _team != Team.ALL) ? GameManager.GetCurrentTeam() : _team;
+		}
+	}
 
 	//Categories
 	public Controls controls;

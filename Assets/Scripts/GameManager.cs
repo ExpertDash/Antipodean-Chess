@@ -10,11 +10,11 @@ public class GameManager : MonoBehaviour {
 	public Chessboard _board;
 	public bool ongoingGame = false;
 
-	private Dictionary<Team, Piece> kings;
-	public Team[] teams;
-	public int teamIndex = 0;
+	private Dictionary<Team, Piece> kings; //Stores the king pieces of all teams for easy access
+	[TooltipAttribute("Teams in the match")] public Team[] teams;
+	[TooltipAttribute("Index of the team in the Teams that has the current turn")] public int teamIndex = 0;
 
-	public Stack<string> record;
+	public Stack<string> record; //Holds a record of the different plays made throughout the match
 
 	void Start() {
 		if(instance) {
@@ -22,17 +22,20 @@ public class GameManager : MonoBehaviour {
 			Destroy(this);
 		} else {
 			instance = this;
+			kings = new Dictionary<Team, Piece>();
 			record = new Stack<string>();
 		}
 	}
 
+	/// <summary>Adds a play to the record</summary>
+	/// <param name="play">Play to be added</param>
 	private static void AddToRecord(string play) {
 		instance.record.Push(play);
 		Debug.Log(play);
 	}
 
+	/// <summary>Undoes the last recorded play</summary>
 	public static void Undo() {
-		//TODO: Undo moves that allow king to be checkmated
 		if(instance.record.Count > 0) {
 			string lastPlay = instance.record.Pop();
 
@@ -43,8 +46,10 @@ public class GameManager : MonoBehaviour {
 					{
 						string[] data = playType[1].Split(',');
 
+						//Get the piece at its current position and set it to its previous position
 						Piece piece = board.GetPiece(data[1]);
 						piece.SetTransformParent(board.GetPlane(data[0]).transform);
+						//Reverse the amount of times moved
 						piece.timesMoved--;
 					}
 					break;
@@ -57,10 +62,14 @@ public class GameManager : MonoBehaviour {
 						Piece.Type enemyType = (Piece.Type)Enum.Parse(typeof(Piece.Type), data[2]);
 						Team enemyTeam = (Team)Enum.Parse(typeof(Team), data[3]);
 
+						//Get the piece at its current position and set it to its previous position
 						Piece piece = board.GetPiece(location);
 						piece.SetTransformParent(board.GetPlane(oldLocation).transform);
+
+						//Reverse the amount of times moved
 						piece.timesMoved--;
 
+						//Put the captured piece back
 						Place(enemyType, enemyTeam, location);
 					}
 					break;
@@ -74,10 +83,14 @@ public class GameManager : MonoBehaviour {
 						string location = data[0];
 						Piece piece = board.GetPiece(location);
 						Team team = piece.team;
+						Piece.Type type = (Piece.Type)Enum.Parse(typeof(Piece.Type), data[1]);
 						int timesMoved = piece.timesMoved;
 
-						Destroy(piece.gameObject);
-						Place((Piece.Type)Enum.Parse(typeof(Piece.Type), data[1]), team, location);
+						//Remove the promoted piece
+						Remove(piece);
+						//Place the old piece
+						Place(type, team, location);
+						//Copy the times moved over to the unpromoted piece
 						board.GetPiece(location).timesMoved = timesMoved;
 					}
 					break;
@@ -87,6 +100,15 @@ public class GameManager : MonoBehaviour {
 		} else {
 			Debug.Log("Unable to undo further");
 		}
+	}
+
+	/// <summary>Removes a piece from the board by destroying it</summary>
+	/// <param name="piece">Piece to be removed</param>
+	private static void Remove(Piece piece) {
+		//Detach piece from parent plane
+		board.GetPlane(piece.GetLocation()).transform.DetachChildren();
+		//Destroy the piece's GameObject
+		Destroy(piece.gameObject);
 	}
 
 	public static bool IsGameOngoing() {
@@ -121,6 +143,9 @@ public class GameManager : MonoBehaviour {
 			piece.color = piece.color; //Getting the piece's color always returns color based on team while setting can make it any color
 			piece.SetTransformParent(plane.transform);
 
+			//Cache King piece
+			if(type == Piece.Type.KING) instance.kings[team] = piece;
+
 			return true;
 		}
 
@@ -147,8 +172,7 @@ public class GameManager : MonoBehaviour {
 			if(record) AddToRecord("C:" + piece.GetLocation() + "," + location + "," + existingPiece.type + "," + existingPiece.team);
 
 			//Capture
-			plane.transform.DetachChildren();
-			Destroy(existingPiece.gameObject);
+			Remove(existingPiece);
 			piece.SetTransformParent(plane.transform);
 			piece.timesMoved++;
 
@@ -184,9 +208,7 @@ public class GameManager : MonoBehaviour {
 		if(record) AddToRecord("P:" + location + "," + piece.type + "," + type);
 
 		//Destroy the piece
-		GameObject plane = board.GetPlane(piece.GetLocation());
-		plane.transform.DetachChildren();
-		Destroy(piece.gameObject);
+		Remove(piece);
 
 		//Place a new piece with the promoted type on the same team at the same location
 		Place(type, team, location);
@@ -194,35 +216,34 @@ public class GameManager : MonoBehaviour {
 
 	/// <summary>Go to the next turn</summary>
 	public static void NextTurn() {
-		if(instance.kings == null) {
-			instance.kings = new Dictionary<Team, Piece>();;
-
-			//Discover kings for each team and place them into dictionary
-			foreach(Tile tile in board.GetTiles()) {
-				Piece piece = tile.GetPiece();
-				Piece inversePiece = tile.GetInversePiece();
-
-				if(piece && piece.type == Piece.Type.KING) instance.kings[piece.team] = piece;
-				if(inversePiece && inversePiece.type == Piece.Type.KING) instance.kings[inversePiece.team] = inversePiece;
-			}
+		//Only allow the team to complete a turn if their move doesn't leave the king in checkmate
+		if(Rules.IsVunerable(instance.kings[GetCurrentTeam()])) {
+			//Undo the turn
+			Undo();
+		} else {
+			//Alternate between whose turn it is
+			if(++instance.teamIndex >= instance.teams.Length) instance.teamIndex = 0;
 		}
-
-		//Alternate between whose turn it is
-		if(++instance.teamIndex >= instance.teams.Length) instance.teamIndex = 0;
 
 		//Display checkmated kings as red
 		foreach(Piece king in instance.kings.Values) {
-			if(Rules.IsVunerable(king)) {
-				Tile tile = king.GetTile();
-				if(king.IsLocationInverse()) tile.SetInverseColor(BoardConfig.visuals.checkTileColor);
-				else tile.SetColor(BoardConfig.visuals.checkTileColor);
-			}
+			Tile tile = king.GetTile();
+
+			Color color = Rules.IsVunerable(king) ? BoardConfig.visuals.checkTileColor : tile.color;
+
+			if(king.IsLocationInverse()) tile.SetInverseColor(color);
+			else tile.SetColor(color);
 		}
 	}
 
 	/// <param name="team">Team to check</param>
 	/// <returns>Returns whether it is the given team's turn</returns>
 	public static bool IsTurn(Team team) {
-		return (team == Team.ALL) || ((0 <= instance.teamIndex && instance.teamIndex < instance.teams.Length) ? instance.teams[instance.teamIndex] == team : false);
+		return (team == Team.ALL) || ((0 <= instance.teamIndex && instance.teamIndex < instance.teams.Length) ? GetCurrentTeam() == team : false);
+	}
+
+	/// <returns>Returns the team whose turn it is currently</returns>
+	public static Team GetCurrentTeam() {
+		return instance.teams[instance.teamIndex];
 	}
 }

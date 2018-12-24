@@ -221,7 +221,7 @@ public abstract class Rules {
 				//Returns true only if the piece is the king of the same team
 				return found && found.type == Piece.Type.KING && found.team == piece.team;
 			});
-		} else if(piece.type == Piece.Type.QUEEN && inversePiece.type == Piece.Type.KING) {
+		} else if(piece.team == inversePiece.team && piece.type == Piece.Type.QUEEN && inversePiece.type == Piece.Type.KING) {
 			return true;
 		}
 

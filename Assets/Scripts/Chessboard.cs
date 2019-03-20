@@ -204,6 +204,7 @@ public class Chessboard : MonoBehaviour {
 			textMesh.characterSize = 0.01f;
 			textMesh.fontSize = 350;
 			textMesh.anchor = TextAnchor.MiddleCenter;
+			textMesh.font = Resources.GetBuiltinResource<Font>("Arial.ttf");
 
 			tileName.GetComponent<Renderer>().material.shader = Shader.Find("GUI/3D Text");
 			tileName.GetComponent<Renderer>().material.color = BoardConfig.visuals.tileNameColor;

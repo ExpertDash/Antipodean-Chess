@@ -1,18 +1,18 @@
 fileFormatVersion: 2
-guid: 4c284f53307f3394f99058e1062a5128
-timeCreated: 1524891648
+guid: 93fab26d556867240a5af11c70277df6
+timeCreated: 1553122965
 licenseType: Free
 ModelImporter:
   serializedVersion: 22
   fileIDToRecycleName:
-    100000: default
+    100000: OpenSCAD_Model
     100002: //RootNode
-    400000: default
+    400000: OpenSCAD_Model
     400002: //RootNode
-    2100000: defaultMat
-    2300000: default
-    3300000: default
-    4300000: default
+    2100000: OpenSCAD_ModelMat
+    2300000: OpenSCAD_Model
+    3300000: OpenSCAD_Model
+    4300000: OpenSCAD_Model
   externalObjects: {}
   materials:
     importMaterials: 1
